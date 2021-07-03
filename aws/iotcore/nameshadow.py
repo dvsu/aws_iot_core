@@ -1,5 +1,3 @@
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: MIT-0
 import json
 import logging
 from awscrt import io, mqtt, auth, http
@@ -8,13 +6,13 @@ from awsiot import mqtt_connection_builder
 
 class AWSMQTT:
 
-    def __init__(self, endpoint: str, port: int, client_id: str, certificate: str, private_key: str, root_ca: str, topic: str, logger=None):
+    def __init__(self, endpoint: str, port: int, client_id: str, certificate: str, private_key: str, root_ca: str, topic_prefix: str, logger=None):
         self.logger = None
         if logger:
             self.logger = logging.getLogger(logger)
         self.endpoint = endpoint
         self.client_id = client_id
-        self.topic = topic
+        self.topic = topic_prefix
         self.root_ca = root_ca
         self.certificate = certificate
         self.private_key = private_key
@@ -53,10 +51,30 @@ class AWSMQTT:
                 print(
                     f"Failed to connect to endpoint {self.endpoint} with client ID '{self.client_id}'\n{type(e).__name__}: {e}")
 
-    def publish_message(self, message):
+    # Custom MQTT message callback
+    def customCallback(self, client, userdata, message):
+        print("Received a new message: ")
+        print(message.payload)
+        print("from topic: ")
+        print(message.topic)
+        print("--------------\n\n")
+
+    def publish_message(self, message, name_shadow: str):
         try:
-            self.mqtt_connection.publish(topic=self.topic, payload=json.dumps(
-                message), qos=mqtt.QoS.AT_LEAST_ONCE)
+            # payload = {
+            #     "state": {
+            #         "desired": message
+            #     }
+            # }
+
+            payload = {
+                "state": {
+                    "desired": message
+                }
+            }
+
+            self.mqtt_connection.publish(
+                topic=name_shadow, payload=json.dumps(payload), qos=mqtt.QoS.AT_LEAST_ONCE)
 
         except Exception as e:
             if self.logger:

@@ -6,7 +6,7 @@ import threading
 from time import sleep
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
-from aws_mqtt import AWSMQTT
+from aws.iotcore.pubsub import AWSIoTMQTTPubSub
 
 
 class Tasks:
@@ -29,7 +29,7 @@ class Tasks:
         self.logger.info(f'{"-"*200}')
 
         # set up AWS MQTT communication
-        self.aws_mqtt = AWSMQTT(
+        self.aws_mqtt = AWSIoTMQTTPubSub(
             endpoint=config.AWS_HOST,
             port=config.PORT,
             client_id=config.CLIENT_ID,
@@ -37,7 +37,8 @@ class Tasks:
             private_key=config.AWS_PRIVATE_KEY,
             root_ca=config.AWS_ROOT_CA,
             topic=config.TOPIC,
-            logger=self.logger_name)
+            logger=self.logger_name,
+            debug=True)
 
         self.run()
 
@@ -46,11 +47,11 @@ class Tasks:
             try:
                 data = {}
 
-                with open('dummy_data.json', 'r') as file:
+                with open('dummy_device_data_3.json', 'r') as file:
                     data = json.load(file)
 
-                data["logtime"] = datetime.now().timestamp()
-                data["ttl"] = data["logtime"] + config.TTL
+                # data["logtime"] = datetime.now().timestamp()
+                # data["ttl"] = data["logtime"] + config.TTL
                 self.aws_mqtt.publish_message(data)
 
             except Exception as e:

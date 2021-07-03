@@ -1,0 +1,9 @@
+{
+  "paramX": {
+    "subparam1": 7,
+    "subparam2": 8,
+    "subparam3": 9
+  },
+  "paramY": 1000,
+  "paramZ": "XYZ"
+}
