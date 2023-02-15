@@ -1,14 +1,12 @@
 import json
-import logging
-from typing import Any
-from dataclasses import asdict
-from awscrt import io, mqtt, auth, http
+from typing import Any, Union
+from awscrt import io, mqtt
 from awsiot import mqtt_connection_builder
 
 
 class AWSIoTMQTTPubSub:
 
-    def __init__(self, endpoint: str, port: int,
+    def __init__(self, endpoint: str, port: Union[int, str],
                  client_id: str, certificate: str,
                  private_key: str, root_ca: str,
                  topic: str, debug=False):
@@ -18,7 +16,7 @@ class AWSIoTMQTTPubSub:
         self.root_ca = root_ca
         self.certificate = certificate
         self.private_key = private_key
-        self.port = port
+        self.port = int(port)
         self.debug = debug
 
         self.event_loop_group = io.EventLoopGroup(1)
@@ -40,12 +38,11 @@ class AWSIoTMQTTPubSub:
         self.self_subscription()
 
     def initializing_connection(self):
-        self.logger.info(
-            f"Connecting to endpoint {self.endpoint} with client ID '{self.client_id}'...")
+        print(f"Connecting to endpoint {self.endpoint} with client ID '{self.client_id}'...")
         try:
             connect_future = self.mqtt_connection.connect()
             result = connect_future.result()
-            self.logger.info("Connection successful!")
+            print("Connection successful!")
 
         except Exception as e:
             print(
@@ -65,29 +62,26 @@ class AWSIoTMQTTPubSub:
 
             subscribe_result = subscribe_future.result()
 
-            if self.logger:
-                self.logger.info("Subscribed with {}".format(
-                    str(subscribe_result['qos'])))
-            else:
-                print("Subscribed with {}".format(
-                    str(subscribe_result['qos'])))
+            print("Subscribed with {}".format(str(subscribe_result['qos'])))
 
         except Exception as e:
             print(f"Failed to subscribe to topic {self.topic}\n{type(e).__name__}: {e}")
 
-    def on_message_received(self, topic, payload, dup, qos, retain, **kwargs):
+    def on_message_received(self, topic, payload, dup, qos, retain, **kwargs) -> None:
         if self.debug:
             print(f"Received message from topic '{topic}': {payload}")
 
-    def publish_message(self, message: dict[str, Any]):
+    def publish_message(self, message: dict[str, Any]) -> None:
         try:
-            self.mqtt_connection.publish(topic=self.topic, payload=json.dumps(
-                message), qos=mqtt.QoS.AT_LEAST_ONCE)
+            self.mqtt_connection.publish(
+                topic=self.topic,
+                payload=json.dumps(message),
+                qos=mqtt.QoS.AT_LEAST_ONCE)
 
         except Exception as e:
             print(f"Failed to publish message to topic '{self.topic}'\n{type(e).__name__}: {e}")
 
-    def end_connection(self):
+    def end_connection(self) -> None:
         print(f"Ending connection to endpoint {self.endpoint}...")
 
         try:
