@@ -7,11 +7,11 @@ import json
 #
 # Name: Bot
 # {
-#	"state": {
-#		"desired":{
-#			"property":<INT VALUE>
-#		}
-#	}
+# "state": {
+# "desired":{
+# "property":<INT VALUE>
+# }
+# }
 # }
 
 # # Custom Shadow callback
