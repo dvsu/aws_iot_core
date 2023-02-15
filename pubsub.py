@@ -9,7 +9,8 @@ class AWSIoTMQTTPubSub:
     def __init__(self, endpoint: str, port: Union[int, str],
                  client_id: str, certificate: str,
                  private_key: str, root_ca: str,
-                 topic: str, debug=False):
+                 topic: str, self_subscribe: bool = True,
+                 debug: bool = False):
         self.endpoint = endpoint
         self.client_id = client_id
         self.topic = topic
@@ -35,7 +36,9 @@ class AWSIoTMQTTPubSub:
             keep_alive_secs=6)
 
         self.initializing_connection()
-        self.self_subscription()
+
+        if self_subscribe:
+            self.self_subscription()
 
     def initializing_connection(self):
         print(f"Connecting to endpoint {self.endpoint} with client ID '{self.client_id}'...")
